@@ -2,10 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const CardGameApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => GameState(),
+      child: const CardGameApp(),
+    ),
+  );
 }
 
+// Card model class
+class CardModel {
+  final String front;
+  final String back;
+  bool isFaceUp;
 
+  CardModel({required this.front, required this.back, this.isFaceUp = false});
+
+  void flip() {
+    isFaceUp = !isFaceUp;
+  }
+}
+
+// Game state management with Provider
+class GameState with ChangeNotifier {
+  final List<CardModel> _cards = [
+    CardModel(front: '🐱', back: '❓'),
+    CardModel(front: '🐶', back: '❓'),
+    CardModel(front: '🐱', back: '❓'),
+    CardModel(front: '🐶', back: '❓'),
+    CardModel(front: '🐦', back: '❓'),
+    CardModel(front: '🐸', back: '❓'),
+    CardModel(front: '🐸', back: '❓'),
+    CardModel(front: '🐶', back: '❓'),
+  ];
+
+  List<CardModel> get cards => _cards;
+
+  void flipCard(int index) {
+    cards[index].flip();
+    notifyListeners();
+  }
+}
 
 class CardGameApp extends StatelessWidget {
   const CardGameApp({super.key});
@@ -37,72 +74,38 @@ class HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Expanded(child:
-              GridView.count(
-                primary: false,
-                padding: const EdgeInsets.all(20),
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                crossAxisCount: 4,
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.red[200],
-                    child: const Text('Card 1'),
+      body: Consumer<GameState>(
+        builder: (context, gameState, child) {
+          return GridView.builder(
+            padding: const EdgeInsets.all(20),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+            ),
+            itemCount: gameState.cards.length,
+            itemBuilder: (context, index) {
+              final card = gameState.cards[index];
+              return GestureDetector(
+                onTap: () => gameState.flipCard(index),
+                child: Container(
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: card.isFaceUp ? Colors.blue[200] : Colors.grey[300],
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.red[200],
-                    child: const Text('Card 2'),
+                  child: Text(
+                    card.isFaceUp ? card.front : card.back,
+                    style: TextStyle(fontSize: 32),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.teal[300],
-                    child: const Text('Card 3'),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.teal[300],
-                    child: const Text('Card 4'),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.red[200],
-                    child: const Text('Card 5'),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.red[200],
-                    child: const Text('Card 6'),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.teal[300],
-                    child: const Text('Card 7'),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    color: Colors.teal[300],
-                    child: const Text('Card 8'),
-                  ),
-                ],
-              )
-            )
-          ],
-        ),
+                )
+              );
+            },
+          );
+        },
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _incrementCounter,
-      //   tooltip: 'Increment',
-      //   child: const Icon(Icons.add),
-      // ),
     );
   }
 }
