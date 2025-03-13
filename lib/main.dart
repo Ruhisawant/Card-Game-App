@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const CardGameApp());
 }
+
+
 
 class CardGameApp extends StatelessWidget {
   const CardGameApp({super.key});
