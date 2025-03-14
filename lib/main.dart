@@ -16,8 +16,9 @@ class CardModel {
   final String front;
   final String back;
   bool isFaceUp;
+  bool isMatched;
 
-  CardModel({required this.front, required this.back, this.isFaceUp = false});
+  CardModel({required this.front, required this.back, this.isFaceUp = false, this.isMatched = false});
 
   void flip() {
     isFaceUp = !isFaceUp;
@@ -35,10 +36,13 @@ class GameState with ChangeNotifier {
     'assets/images/cards/7_of_diamonds.png',
     'assets/images/cards/8_of_hearts.png',
     'assets/images/cards/9_of_spades.png',
-    'assets/images/cards/10_of_clubs.png',
   ];
 
   final List<CardModel> _cards = [];
+  CardModel? _firstFlippedCard;
+  int? _firstFlippedIndex;
+  bool _isChecking = false;
+  bool get isGameWon => _cards.every((card) => card.isMatched);
 
   List<CardModel> get cards => _cards;
 
@@ -55,9 +59,35 @@ class GameState with ChangeNotifier {
     notifyListeners();
   }
 
-
   void flipCard(int index) {
+    if (_isChecking || _cards[index].isFaceUp || _cards[index].isMatched) return;
+
     _cards[index].flip();
+    notifyListeners();
+
+    if (_firstFlippedCard == null) {
+      _firstFlippedCard = _cards[index];
+      _firstFlippedIndex = index;
+    } else {
+      _isChecking = true;
+      if (_firstFlippedCard!.front == _cards[index].front) {
+        _cards[index].isMatched = true;
+        _cards[_firstFlippedIndex!].isMatched = true;
+        _resetSelection();
+      } else {
+        Future.delayed(const Duration(seconds: 1), () {
+          _cards[index].flip();
+          _cards[_firstFlippedIndex!].flip();
+          _resetSelection();
+        });
+      }
+    }
+  }
+
+  void _resetSelection() {
+    _firstFlippedCard = null;
+    _firstFlippedIndex = null;
+    _isChecking = false;
     notifyListeners();
   }
 }
@@ -118,11 +148,11 @@ class _FlipCardState extends State<FlipCard> with SingleTickerProviderStateMixin
             alignment: Alignment.center,
             transform: Matrix4.rotationY(angle),
             child: isFrontVisible
-                ? Image.asset(widget.backImage, height: 100, width: 100)
+                ? Image.asset(widget.backImage, height: 25, width: 25)
                 : Transform(
                     alignment: Alignment.center,
                     transform: Matrix4.rotationY(pi),
-                    child: Image.asset(widget.frontImage, height: 100, width: 100),
+                    child: Image.asset(widget.frontImage, height: 25, width: 25),
                   ),
           );
         },
@@ -158,6 +188,26 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.title});
   final String title;
 
+  void _showWinDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Congratulations!"),
+        content: const Text("You matched all pairs!"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.read<GameState>()._initializeCards(); // Restart the game
+            },
+            child: const Text("Play Again"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,18 +217,25 @@ class HomePage extends StatelessWidget {
       ),
       body: Consumer<GameState>(
         builder: (context, gameState, child) {
+          // Show win dialog after the UI rebuilds
+          if (gameState.isGameWon) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _showWinDialog(context);
+            });
+          }
+
           return GridView.builder(
             padding: const EdgeInsets.all(20),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 4,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
             ),
             itemCount: gameState.cards.length,
             itemBuilder: (context, index) {
               final card = gameState.cards[index];
               return FlipCard(
-                isFaceUp: card.isFaceUp,
+                isFaceUp: card.isFaceUp || card.isMatched,
                 frontImage: card.front,
                 backImage: card.back,
                 onTap: () => gameState.flipCard(index),
