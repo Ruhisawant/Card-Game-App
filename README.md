@@ -1,16 +1,57 @@
-# card_game_app
+# Card Matching Game
 
-A new Flutter project.
+A simple card-matching memory game built with Flutter and Provider for state management. The game challenges players to match pairs of cards by flipping them over.
 
-## Getting Started
+## Features
+- Flip animation with smooth transitions.
+- Randomized card layout for each game.
+- State management using Provider.
+- Win condition detection with a congratulatory dialog.
+- Easy-to-use UI with a 4x4 grid layout.
 
-This project is a starting point for a Flutter application.
+## Installation
+### Prerequisites
+- Flutter SDK installed
+- Dart installed
+- A code editor (VS Code, Android Studio, etc.)
 
-A few resources to get you started if this is your first Flutter project:
+### Steps
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/card-matching-game.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd card-matching-game
+   ```
+3. Install dependencies:
+   ```bash
+   flutter pub get
+   ```
+4. Run the app:
+   ```bash
+   flutter run
+   ```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## How to Play
+1. Tap a card to flip it over.
+2. Tap another card to try and find its matching pair.
+3. If the cards match, they stay face-up; otherwise, they flip back after a second.
+4. Match all pairs to win the game!
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Project Structure
+```
+lib/
+├── main.dart          # Entry point of the app
+├── game_state.dart    # Game logic and state management
+├── card_model.dart    # Card data model
+├── flip_card.dart     # Flip animation widget
+├── home_page.dart     # UI layout with grid of cards
+assets/
+├── images/           # Card images
+├── screenshots/      # Screenshots for documentation
+```
+
+## Dependencies
+- `flutter`
+- `provider`
