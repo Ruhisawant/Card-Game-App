@@ -26,18 +26,35 @@ class CardModel {
 
 // Game state management with Provider
 class GameState with ChangeNotifier {
-  final List<CardModel> _cards = [
-    CardModel(front: '🐱', back: '❓'),
-    CardModel(front: '🐶', back: '❓'),
-    CardModel(front: '🐱', back: '❓'),
-    CardModel(front: '🐶', back: '❓'),
-    CardModel(front: '🐦', back: '❓'),
-    CardModel(front: '🐸', back: '❓'),
-    CardModel(front: '🐸', back: '❓'),
-    CardModel(front: '🐶', back: '❓'),
-  ]..shuffle(Random());
+  final List<String> _cardImages = [
+    'assets/images/cards/2_of_clubs.png',
+    'assets/images/cards/3_of_diamonds.png',
+    'assets/images/cards/4_of_hearts.png',
+    'assets/images/cards/5_of_spades.png',
+    'assets/images/cards/6_of_clubs.png',
+    'assets/images/cards/7_of_diamonds.png',
+    'assets/images/cards/8_of_hearts.png',
+    'assets/images/cards/9_of_spades.png',
+    'assets/images/cards/10_of_clubs.png',
+  ];
+
+  final List<CardModel> _cards = [];
 
   List<CardModel> get cards => _cards;
+
+  GameState() {
+    _initializeCards();
+  }
+
+  void _initializeCards() {
+    List<String> shuffledImages = [..._cardImages, ..._cardImages]..shuffle(Random());
+    _cards.clear();
+    for (var image in shuffledImages) {
+      _cards.add(CardModel(front: image, back: 'assets/images/cardBack.jpg'));
+    }
+    notifyListeners();
+  }
+
 
   void flipCard(int index) {
     _cards[index].flip();
@@ -162,8 +179,8 @@ class HomePage extends StatelessWidget {
               final card = gameState.cards[index];
               return FlipCard(
                 isFaceUp: card.isFaceUp,
-                frontImage: 'assets/images/CardFront.jpg',
-                backImage: 'assets/images/CardBack.jpg',
+                frontImage: card.front,
+                backImage: card.back,
                 onTap: () => gameState.flipCard(index),
               );
             },
